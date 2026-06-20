@@ -1,0 +1,67 @@
+.logo {
+  height: 6em;
+  padding: 1.5rem;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.preact:hover {
+  filter: drop-shadow(0 0 2em #673ab8aa);
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.guide-section {
+  max-width: 600px;
+  margin: 2rem auto;
+  text-align: left;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid #333;
+}
+
+@media (prefers-color-scheme: light) {
+  .guide-section {
+    background-color: #f9f9f9;
+    border-color: #e5e5e5;
+  }
+}
+
+.guide-title {
+  margin-top: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.guide-list {
+  padding-left: 1.25rem;
+  margin-bottom: 0;
+}
+
+.guide-list li {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.guide-list code {
+  font-family: monospace;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+}
+
+@media (prefers-color-scheme: light) {
+  .guide-list code {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+}

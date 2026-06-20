@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mystic</title>
+    <link rel="stylesheet" href="./src/styles/global.css">
+</head>
+<body>
+    <div id="root"></div>
+
+    <script src="./vendor/preact.js"></script>
+    <script src="./vendor/hooks.js"></script>
+    <script src="./vendor/htm.js"></script>
+
+    <script>
+        window.html = htm.bind(preact.h);
+        window.useState = preactHooks.useState;
+        window.useEffect = preactHooks.useEffect;
+
+        window.loadCSS = function(href) {
+            if (document.querySelector(`link[href="${href}"]`)) return;
+
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = href;
+            link.className = 'dynamic-page-style';
+            document.head.appendChild(link);
+        };
+    </script>
+
+    <script src="./src/routes.js"></script>
+    <script src="./src/templates/shell.js"></script>
+
+    <script>
+        window.pages = Object.keys(window.RouterConfig.pages);
+        window.goTo = function(routeName) { window.location.hash = `#${routeName}`; };
+
+        function Main() {
+            const config = window.RouterConfig;
+            const [currentRoute, setCurrentRoute] = useState(() => {
+                return window.location.hash.replace('#', '') || config.defaultRoute;
+            });
+            const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+
+            useEffect(() => {
+                const handleHash = () => {
+                    setCurrentRoute(window.location.hash.replace('#', '') || config.defaultRoute);
+                    setIsScriptLoaded(false);
+                };
+                window.addEventListener('hashchange', handleHash);
+                return () => window.removeEventListener('hashchange', handleHash);
+            }, [config.defaultRoute]);
+
+            useEffect(() => {
+                const targetScriptPath = config.pages[currentRoute];
+                if (!targetScriptPath) return;
+
+                const oldStyles = document.querySelectorAll('.dynamic-page-style');
+                oldStyles.forEach(style => style.remove());
+
+                const oldScript = document.getElementById('active-page-script');
+                if (oldScript) oldScript.remove();
+                window.App = null;
+
+                const script = document.createElement('script');
+                script.id = 'active-page-script';
+                script.src = targetScriptPath;
+                script.onload = () => setIsScriptLoaded(true);
+                document.body.appendChild(script);
+            }, [currentRoute, config.pages]);
+
+            if (!config.pages[currentRoute]) {
+                return html`<div class="error-card">404: Route [#${currentRoute}] Not Configured.</div>`;
+            }
+
+            if (!isScriptLoaded || typeof window.App !== 'function') {
+                return html`<div>Siphoning Context...</div>`;
+            }
+
+            const ActiveApp = window.App;
+
+            return html`
+                <${Shell} currentRoute=${currentRoute}>
+                    <${ActiveApp} />
+                </${Shell}>
+            `;
+        }
+
+        preact.render(html`<${Main} />`, document.getElementById('root'));
+    </script>
+</body>
+</html>
