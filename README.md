@@ -7,7 +7,6 @@ This is not finished yet, still WIP.
 TODO:
 - Better routing
 - Minify HTML?
-- Add templates for errors and so on
 - Collections? Like md collections for blogs and stuff
 
 ---
