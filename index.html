@@ -32,6 +32,7 @@
     <script src="./src/templates/shell.js"></script>
     <script src="./src/templates/not-found.js"></script>
     <script src="./src/templates/loading.js"></script>
+    <script src="./src/templates/error.js"></script>
 
     <script>
         window.pages = Object.keys(window.RouterConfig.pages);
@@ -43,11 +44,13 @@
                 return window.location.hash.replace('#', '') || config.defaultRoute;
             });
             const [ActiveApp, setActiveApp] = useState(null);
+            const [error, setError] = useState(null);
 
             useEffect(() => {
                 const handleHash = () => {
                     setCurrentRoute(window.location.hash.replace('#', '') || config.defaultRoute);
                     setActiveApp(null);
+                    setError(null);
                 };
                 window.addEventListener('hashchange', handleHash);
                 return () => window.removeEventListener('hashchange', handleHash);
@@ -59,15 +62,22 @@
 
                 document.querySelectorAll('.dynamic-page-style').forEach(s => s.remove());
                 setActiveApp(null);
+                setError(null);
 
                 import(targetScriptPath).then(module => {
                     if (module.css) window.loadCSS(module.css);
                     setActiveApp(() => module.default);
+                }).catch(err => {
+                    setError(err.message || String(err));
                 });
             }, [currentRoute]);
 
             if (!config.pages[currentRoute]) {
                 return html`<${NotFound} route=${currentRoute} />`;
+            }
+
+            if (error) {
+                return html`<${PageError} message=${error} />`;
             }
 
             if (!ActiveApp) {
