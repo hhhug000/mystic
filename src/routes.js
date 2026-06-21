@@ -1,7 +1,13 @@
 window.RouterConfig = {
     defaultRoute: "home",
     pages: {
-        "home": "./src/pages/welcome.js",
-        "docs": "./src/pages/docs.js"
+        "home": {
+            path: "./src/pages/welcome.js",
+            title: "Mystic"
+        },
+        "docs": {
+            path: "./src/pages/docs.js",
+            title: "Getting Started — Mystic"
+        }
     }
 };

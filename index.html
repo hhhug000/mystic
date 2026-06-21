@@ -38,6 +38,8 @@
         window.pages = Object.keys(window.RouterConfig.pages);
         window.goTo = function(routeName) { window.location.hash = `#${routeName}`; };
 
+        const routeCache = {};
+
         function Main() {
             const config = window.RouterConfig;
             const [currentRoute, setCurrentRoute] = useState(() => {
@@ -48,24 +50,48 @@
 
             useEffect(() => {
                 const handleHash = () => {
-                    setCurrentRoute(window.location.hash.replace('#', '') || config.defaultRoute);
-                    setActiveApp(null);
+                    const nextRoute = window.location.hash.replace('#', '') || config.defaultRoute;
+                    if (nextRoute === currentRoute) return;
+
+                    const routeConfig = config.pages[currentRoute];
+                    if (routeConfig?.canLeave && !routeConfig.canLeave()) {
+                        window.location.hash = `#${currentRoute}`;
+                        return;
+                    }
+
+                    setCurrentRoute(nextRoute);
                     setError(null);
+                    window.scrollTo(0, 0);
                 };
                 window.addEventListener('hashchange', handleHash);
                 return () => window.removeEventListener('hashchange', handleHash);
-            }, [config.defaultRoute]);
+            }, [currentRoute]);
 
             useEffect(() => {
-                const targetScriptPath = config.pages[currentRoute];
-                if (!targetScriptPath) return;
+                const routeConfig = config.pages[currentRoute];
+                if (!routeConfig) return;
 
-                document.querySelectorAll('.dynamic-page-style').forEach(s => s.remove());
-                setActiveApp(null);
+                if (routeConfig.canEnter && !routeConfig.canEnter()) {
+                    if (currentRoute !== config.defaultRoute) window.goTo(config.defaultRoute);
+                    return;
+                }
+
+                if (routeConfig.title) document.title = routeConfig.title;
                 setError(null);
 
-                import(targetScriptPath).then(module => {
+                if (routeCache[currentRoute]) {
+                    document.querySelectorAll('.dynamic-page-style').forEach(s => s.remove());
+                    if (routeCache[currentRoute].css) window.loadCSS(routeCache[currentRoute].css);
+                    setActiveApp(() => routeCache[currentRoute].component);
+                    return;
+                }
+
+                setActiveApp(null);
+
+                import(routeConfig.path).then(module => {
+                    document.querySelectorAll('.dynamic-page-style').forEach(s => s.remove());
                     if (module.css) window.loadCSS(module.css);
+                    routeCache[currentRoute] = { component: module.default, css: module.css };
                     setActiveApp(() => module.default);
                 }).catch(err => {
                     setError(err.message || String(err));

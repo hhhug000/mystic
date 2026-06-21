@@ -17,7 +17,11 @@ TODO:
 - **ES Modules** — Pages are standard ES modules with full `import`/`export` support
 - **Preact + HTM** — Reactive components using tagged template literals instead of JSX
 - **Per-page CSS** — Declare a page's stylesheet with `export const css` — the router loads and unloads it automatically
-- **Hash-based router** — Client-side routing via `hashchange`
+- **Hash-based router** — Client-side routing via `hashchange` with automatic scroll reset
+- **Route caching** — Already-visited pages are cached and mount instantly on return with no loading flash
+- **Page titles** — Each route sets `document.title` automatically via its `title` field
+- **Route guards** — Optional `canEnter` and `canLeave` hooks per route for auth and unsaved-change protection
+- **Template system** — Customisable loading, 404, and error states in `src/templates/`
 - **Simple file structure** — One file per page, register it in `routes.js` and you're done
 
 ---
@@ -55,7 +59,10 @@ Mystic/
     │   ├── welcome.css
     │   └── docs.css
     └── templates/
-        └── shell.js        # Shared layout wrapper (footer, etc.)
+        ├── shell.js        # Shared layout wrapper (footer, etc.)
+        ├── loading.js      # Shown while a page module is fetching
+        ├── not-found.js    # Shown for unregistered routes
+        └── error.js        # Shown when a page module fails to load
 ```
 
 ---
@@ -91,8 +98,14 @@ export default function App() {
 window.RouterConfig = {
     defaultRoute: "home",
     pages: {
-        "home": "./src/pages/welcome.js",
-        "about": "./src/pages/about.js"  // add this
+        "home": {
+            path: "./src/pages/welcome.js",
+            title: "Mystic"
+        },
+        "about": {
+            path: "./src/pages/about.js",
+            title: "About — Mystic"
+        }
     }
 };
 ```
@@ -116,6 +129,37 @@ export const css = './src/styles/about.css';
 ```
 
 The router reads this, injects the stylesheet before mounting the page, and removes it when navigating away. This happens on every navigation — including navigating back to a cached page — so styles are always correct.
+
+---
+
+## Route Guards
+
+Routes can define `canEnter` and `canLeave` guard functions directly in `routes.js`:
+
+```js
+"dashboard": {
+    path: "./src/pages/dashboard.js",
+    title: "Dashboard — Mystic",
+    canEnter: () => !!localStorage.getItem('token'),  // redirect to default if false
+    canLeave: () => confirm('Leave without saving?')  // cancel navigation if false
+}
+```
+
+Both are optional and synchronous. If `canEnter` returns `false`, the router redirects to the default route. If `canLeave` returns `false`, the hash is restored and the user stays on the current page.
+
+---
+
+## Templates
+
+The `src/templates/` folder holds components for router-level states. Edit them to customise what users see:
+
+| File | When shown |
+|---|---|
+| `loading.js` | While a page module is being fetched (first visit only — return visits are cached) |
+| `not-found.js` | When the URL hash points to a route not in `RouterConfig.pages` |
+| `error.js` | When a page module fails to import (receives a `message` prop) |
+
+Each template is a plain function component using the global `html` tag — same as any page.
 
 ---
 
