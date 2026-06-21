@@ -16,11 +16,12 @@ TODO:
 
 ## Features
 
-- **Zero-build** — Open `index.html` in any browser and it just works
+- **Zero-build** — Serve with any HTTP server and it just works — no compiler, no bundler
+- **ES Modules** — Pages are standard ES modules with full `import`/`export` support
 - **Preact + HTM** — Reactive components using tagged template literals instead of JSX
-- **Dynamic CSS injection** — Load page-specific stylesheets on demand with `window.loadCSS()`
-- **Hash-based router** — Client-side routing with no server required
-- **Simple file structure** — Pages are just plain JavaScript files
+- **Per-page CSS** — Declare a page's stylesheet with `export const css` — the router loads and unloads it automatically
+- **Hash-based router** — Client-side routing via `hashchange`
+- **Simple file structure** — One file per page, register it in `routes.js` and you're done
 
 ---
 
@@ -31,7 +32,8 @@ No install required. Just clone and open.
 ```bash
 git clone <your-repo-url>
 cd Mystic
-# Open index.html in your browser
+python -m http.server
+# Open the server in your browser
 ```
 
 ---
@@ -66,9 +68,11 @@ Mystic/
 **1. Create your page file** at `src/pages/about.js`:
 
 ```js
-window.loadCSS('./src/styles/about.css'); // optional
+import { myUtil } from '../utils/helpers.js'; // standard ES imports work
 
-function App() {
+export const css = './src/styles/about.css'; // optional — router loads/unloads this automatically
+
+export default function App() {
     const [count, setCount] = useState(0);
 
     return html`
@@ -81,6 +85,8 @@ function App() {
     `;
 }
 ```
+
+`html`, `useState`, `useEffect` and other Preact globals are available in every page without importing them.
 
 **2. Register the route** in `src/routes.js`:
 
@@ -104,15 +110,15 @@ html`<a href="#about">About</a>`
 
 ---
 
-## Dynamic CSS Loading
+## Per-Page CSS
 
-Each page can load its own stylesheet that is automatically cleaned up on route change:
+Each page declares its own stylesheet via a named export:
 
 ```js
-window.loadCSS('./src/styles/about.css');
+export const css = './src/styles/about.css';
 ```
 
-The engine checks for duplicates and purges old dynamic styles before mounting a new page, preventing style bleedover between routes.
+The router reads this, injects the stylesheet before mounting the page, and removes it when navigating away. This happens on every navigation — including navigating back to a cached page — so styles are always correct.
 
 ---
 

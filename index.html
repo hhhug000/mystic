@@ -40,12 +40,12 @@
             const [currentRoute, setCurrentRoute] = useState(() => {
                 return window.location.hash.replace('#', '') || config.defaultRoute;
             });
-            const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+            const [ActiveApp, setActiveApp] = useState(null);
 
             useEffect(() => {
                 const handleHash = () => {
                     setCurrentRoute(window.location.hash.replace('#', '') || config.defaultRoute);
-                    setIsScriptLoaded(false);
+                    setActiveApp(null);
                 };
                 window.addEventListener('hashchange', handleHash);
                 return () => window.removeEventListener('hashchange', handleHash);
@@ -55,29 +55,22 @@
                 const targetScriptPath = config.pages[currentRoute];
                 if (!targetScriptPath) return;
 
-                const oldStyles = document.querySelectorAll('.dynamic-page-style');
-                oldStyles.forEach(style => style.remove());
+                document.querySelectorAll('.dynamic-page-style').forEach(s => s.remove());
+                setActiveApp(null);
 
-                const oldScript = document.getElementById('active-page-script');
-                if (oldScript) oldScript.remove();
-                window.App = null;
-
-                const script = document.createElement('script');
-                script.id = 'active-page-script';
-                script.src = targetScriptPath;
-                script.onload = () => setIsScriptLoaded(true);
-                document.body.appendChild(script);
-            }, [currentRoute, config.pages]);
+                import(targetScriptPath).then(module => {
+                    if (module.css) window.loadCSS(module.css);
+                    setActiveApp(() => module.default);
+                });
+            }, [currentRoute]);
 
             if (!config.pages[currentRoute]) {
                 return html`<div class="error-card">404: Route [#${currentRoute}] Not Configured.</div>`;
             }
 
-            if (!isScriptLoaded || typeof window.App !== 'function') {
+            if (!ActiveApp) {
                 return html`<div>Siphoning Context...</div>`;
             }
-
-            const ActiveApp = window.App;
 
             return html`
                 <${Shell} currentRoute=${currentRoute}>

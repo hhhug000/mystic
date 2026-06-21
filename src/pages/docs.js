@@ -1,4 +1,4 @@
-window.loadCSS('./src/styles/docs.css');
+export const css = './src/styles/docs.css';
 
 function DocSection({ title, text, code }) {
     return html`
@@ -10,23 +10,15 @@ function DocSection({ title, text, code }) {
     `;
 }
 
-function App() {
+export default function App() {
     const docData = [
     {
-        title: "1. Dynamic Asset Engine",
-        text: "Mystic uses an on-demand asset loader (window.loadCSS) instead of bundled stylesheets. When a route shifts, the engine inserts the new page stylesheet into the document head and purges the previous dynamic styles to avoid style leakage.",
-        code: `// Use like this:
-window.loadCSS = function(href) { ... };
-        
-// Defined like this:
-window.loadCSS = function(href) {
-    if (document.querySelector(\`link[href="\${href}"]\`)) return;
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = href;
-    link.className = 'dynamic-page-style';
-    document.head.appendChild(link);
-};`
+        title: "1. Per-Page CSS",
+        text: "Each page declares its stylesheet via a named export. The router injects it before mounting the page and removes it on navigation — including when navigating back to a cached page — so styles are always correct and never bleed between routes.",
+        code: `// src/pages/my-page.js
+export const css = './src/styles/my-page.css';
+
+export default function App() { ... }`
     },
     {
         title: "2. Virtual DOM & HTM Templates",
@@ -39,16 +31,29 @@ window.loadCSS = function(href) {
     },
     {
         title: "3. Client-Side Page Router",
-        text: "The router listens to the browser hashchange event. When navigating via window.goTo('route'), the hash updates, the router unmounts the current page script, loads the script for the new page dynamically, and mounts the exported App() component.",
-        code: `// Defining routing configs inside src/routes.js
+        text: "The router listens to the browser hashchange event. When navigating via window.goTo('route'), the hash updates, the router dynamically imports the new page module, and mounts the exported default App() component.",
+        code: `// src/routes.js
 window.RouterConfig = {
     defaultRoute: "home",
     pages: {
         "home": "./src/pages/welcome.js",
         "docs": "./src/pages/docs.js"
     }
-};
-`}]
+};`
+    },
+    {
+        title: "4. ES Module Imports",
+        text: "Pages are standard ES modules. Import from any other module using standard import syntax. Preact globals (html, useState, useEffect, etc.) are available in every page without importing them.",
+        code: `// src/pages/my-page.js
+import { myUtil } from '../utils/helpers.js';
+
+export const css = './src/styles/my-page.css';
+
+export default function App() {
+    const [count, setCount] = useState(0);
+    return html\`<div>\${myUtil(count)}</div>\`;
+}`
+    }]
 
     return html`
         <div class="docs-container">
