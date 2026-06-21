@@ -30,6 +30,8 @@
 
     <script src="./src/routes.js"></script>
     <script src="./src/templates/shell.js"></script>
+    <script src="./src/templates/not-found.js"></script>
+    <script src="./src/templates/loading.js"></script>
 
     <script>
         window.pages = Object.keys(window.RouterConfig.pages);
@@ -65,11 +67,11 @@
             }, [currentRoute]);
 
             if (!config.pages[currentRoute]) {
-                return html`<div class="error-card">404: Route [#${currentRoute}] Not Configured.</div>`;
+                return html`<${NotFound} route=${currentRoute} />`;
             }
 
             if (!ActiveApp) {
-                return html`<div>Siphoning Context...</div>`;
+                return html`<${Loading} />`;
             }
 
             return html`
