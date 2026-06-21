@@ -9,8 +9,8 @@ function App() {
             <!-- Logos -->
             <div>
                 <!-- Mystic Logo -->
-                <a href="https://github.com" target="_blank">
-                    <img class="logo" src="./src/assets/mystic-logo.png" alt="Mystic Logo" />
+                <a href="https://github.com/hhhug000/mystic" target="_blank">
+                    <img class="logo" src="./src/assets/mystic-logo.svg" alt="Mystic Logo" />
                 </a>
                 
                 <!-- Preact Logo -->
