@@ -5,7 +5,6 @@ A lightweight, zero-build web framework powered by [Preact](https://preactjs.com
 This is not finished yet, still WIP.
 
 TODO:
-- Better routing
 - Minify HTML?
 - Collections? Like md collections for blogs and stuff
 
