@@ -3,13 +3,13 @@
 A lightweight, zero-build web framework powered by [Preact](https://preactjs.com) and [HTM](https://github.com/developit/htm) designed to make web dev feel magical. Build reactive component-based web apps that run directly in the browser with no compiler, no bundler, and no install step required.
 
 This is not finished yet, still WIP.
+
 TODO:
-Actually good logo
-Better routing
-Fix CSS loading
-Minify HTML?
-Add templates for errors and so on
-Collections? Like md collections for blogs and stuff
+- Better routing
+- Fix CSS loading
+- Minify HTML?
+- Add templates for errors and so on
+- Collections? Like md collections for blogs and stuff
 
 ---
 
