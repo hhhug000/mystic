@@ -5,9 +5,7 @@ A lightweight, zero-build web framework powered by [Preact](https://preactjs.com
 This is not finished yet, still WIP.
 
 TODO:
-- Importing files into others (whilst still working in file://)
 - Better routing
-- Fix CSS loading
 - Minify HTML?
 - Add templates for errors and so on
 - Collections? Like md collections for blogs and stuff
