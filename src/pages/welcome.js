@@ -1,6 +1,16 @@
 // Dynamic page-specific stylesheet
 window.loadCSS('./src/styles/welcome.css');
 
+function Counter() {
+    const [count, setCount] = useState(0);
+
+    return html`
+        <button onClick=${() => setCount(count + 1)}>
+            count is ${count}
+        </button>
+    `;
+}
+
 function App() {
     const [count, setCount] = useState(0);
 
@@ -24,9 +34,7 @@ function App() {
 
             <!-- Reactive Counter Card -->
             <div class="card">
-                <button onClick=${() => setCount(count + 1)}>
-                    count is ${count}
-                </button>
+                <${Counter} />
                 <div style="margin-top: 1.5rem;">
                     <a href="#docs" style="font-weight: 600; font-size: 1.05rem;">Get started →</a>
                 </div>
