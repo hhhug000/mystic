@@ -1,6 +1,6 @@
 export const docData = [
     {
-        title: "1. Per-Page CSS",
+        title: "Per-Page CSS",
         text: "Each page declares its stylesheet via a named export. The router injects it before mounting the page and removes it on navigation — including when navigating back to a cached page — so styles are always correct and never bleed between routes.",
         code: `// src/pages/my-page.js
 export const css = './src/styles/my-page.css';
@@ -8,7 +8,7 @@ export const css = './src/styles/my-page.css';
 export default function App() { ... }`
     },
     {
-        title: "2. Virtual DOM & HTM Templates",
+        title: "Virtual DOM & HTM Templates",
         text: "Mystic utilizes Preact for lightweight virtual DOM reactive states and HTM (Hyperscript Tagged Markup) to compile JSX-like templates at runtime inside the browser.",
         code: `html\`
     <div class="card">
@@ -17,7 +17,7 @@ export default function App() { ... }`
 \`\;`
     },
     {
-        title: "3. Client-Side Page Router",
+        title: "Client-Side Page Router",
         text: "The router listens to the browser hashchange event. When navigating via window.goTo('route'), the hash updates, the router dynamically imports the new page module, and mounts the exported default App() component. Each route is an object with a required path and optional title, canEnter, and canLeave fields.",
         code: `// src/routes.js
 window.RouterConfig = {
@@ -35,7 +35,7 @@ window.RouterConfig = {
 };`
     },
     {
-        title: "4. Route Titles",
+        title: "Route Titles",
         text: "Add a title field to any route and the router will update document.title automatically when that page is navigated to.",
         code: `// src/routes.js
 "about": {
@@ -44,7 +44,7 @@ window.RouterConfig = {
 }`
     },
     {
-        title: "5. Route Guards",
+        title: "Route Guards",
         text: "Routes can define canEnter and canLeave guard functions. canEnter runs before the page mounts — returning false redirects to the default route. canLeave runs before navigating away — returning false cancels the navigation and keeps the user on the current page.",
         code: `// src/routes.js
 "dashboard": {
@@ -55,7 +55,7 @@ window.RouterConfig = {
 }`
     },
     {
-        title: "6. Page Templates",
+        title: "Page Templates",
         text: "The templates folder holds components for router-level states. Loading is shown while a page module is fetching, NotFound when the hash points to an unregistered route, and PageError when the module import throws. Edit these files to customise what users see in each state.",
         code: `// src/templates/loading.js
 function Loading() {
@@ -73,7 +73,7 @@ function PageError({ message }) {
 }`
     },
     {
-        title: "7. ES Module Imports",
+        title: "ES Module Imports",
         text: "Pages are standard ES modules. Import from any other module using standard import syntax. Preact globals (html, useState, useEffect, etc.) are available in every page without importing them.",
         code: `// src/pages/my-page.js
 import { myUtil } from '../utils/helpers.js';
