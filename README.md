@@ -5,7 +5,7 @@ A lightweight, zero-build web framework powered by [Preact](https://preactjs.com
 This is not finished yet, still WIP.
 
 TODO:
-- Collections? Like md collections for blogs and stuff
+- Collections? Like md collections for blogs and stuff - WIP (Currently being done)
 
 ---
 
