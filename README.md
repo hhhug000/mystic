@@ -14,6 +14,8 @@ A lightweight, zero-build web framework powered by [Preact](https://preactjs.com
 - **Route caching** — Already-visited pages are cached and mount instantly on return with no loading flash
 - **Page titles** — Each route sets `document.title` automatically via its `title` field
 - **Route guards** — Optional `canEnter` and `canLeave` hooks per route for auth and unsaved-change protection
+- **Collections** — Group Markdown files into named collections with automatic parameterised routing
+- **Markdown rendering** — Built-in `renderMarkdown()` via [marked](https://marked.js.org) for rendering `.md` files in the browser
 - **Template system** — Customisable loading, 404, and error states in `src/templates/`
 - **Simple file structure** — One file per page, register it in `routes.js` and you're done
 
@@ -40,10 +42,15 @@ Mystic/
 ├── vendor/
 │   ├── preact.js           # Preact virtual DOM
 │   ├── hooks.js            # Preact hooks (useState, useEffect, ...)
-│   └── htm.js              # Tagged template literal HTML
+│   ├── htm.js              # Tagged template literal HTML
+│   └── marked.js           # Markdown parser
 └── src/
     ├── routes.js           # Route page mappings
     ├── assets/             # Static assets (SVGs, images, etc.)
+    ├── collections/        # Markdown collections (e.g. blog posts)
+    │   └── blog/
+    │       ├── index.js    # Collection manifest
+    │       └── *.md        # Markdown files
     ├── pages/              # One file per page/route
     │   ├── welcome.js
     │   └── docs.js
@@ -142,6 +149,76 @@ Both are optional and synchronous. If `canEnter` returns `false`, the router red
 
 ---
 
+## Collections
+
+Collections let you group Markdown files under a shared parameterised route — useful for blogs, changelogs, docs, or any list of content.
+
+**1. Create a manifest** at `src/collections/blog/index.js`:
+
+```js
+export const posts = [
+    { slug: "hello-world", title: "Hello World", date: "2026-01-01", path: "./src/collections/blog/hello-world.md" },
+    { slug: "second-post", title: "Second Post",  date: "2026-02-01", path: "./src/collections/blog/second-post.md"  }
+];
+```
+
+**2. Write your Markdown files** at the paths listed in the manifest.
+
+**3. Register two routes** in `src/routes.js` — one for the list, one for individual items:
+
+```js
+"blog": {
+    path: "./src/pages/blog-list.js",
+    title: "Blog"
+},
+"blog/:slug": {
+    path: "./src/pages/blog-post.js",
+    title: "Blog"
+}
+```
+
+**4. Create the list page** at `src/pages/blog-list.js`:
+
+```js
+import { posts } from '../collections/blog/index.js';
+
+export default function App() {
+    return html`
+        <ul>
+            ${posts.map(p => html`
+                <li><a href="#blog/${p.slug}">${p.title}</a></li>
+            `)}
+        </ul>
+    `;
+}
+```
+
+**5. Create the item page** at `src/pages/blog-post.js`:
+
+```js
+import { posts } from '../collections/blog/index.js';
+
+export default function App({ params }) {
+    const [content, setContent] = useState('');
+    const post = posts.find(p => p.slug === params.slug);
+
+    useEffect(() => {
+        if (!post) return;
+        fetch(post.path)
+            .then(r => r.text())
+            .then(text => setContent(renderMarkdown(text)));
+    }, [params.slug]);
+
+    return html`<article dangerouslySetInnerHTML=${{ __html: content }} />`;
+}
+```
+
+`renderMarkdown(text)` is a global available in every page — no import needed.
+
+To add a new post: create the `.md` file and add one entry to the manifest. The `blog/:slug` route catches any slug automatically.
+
+---
+
 ## Templates
 
 The `src/templates/` folder holds components for router-level states. Edit them to customise what users see:
@@ -169,6 +246,7 @@ The `src/templates/shell.js` component wraps every page. It is the right place t
 | [Preact](https://preactjs.com) | 10.x | Lightweight React-compatible virtual DOM |
 | [HTM](https://github.com/developit/htm) | 3.x | JSX-like templates via tagged template literals |
 | Preact Hooks | 10.x | `useState`, `useEffect`, and more |
+| [marked](https://marked.js.org) | 15.x | Markdown parser for collection pages |
 
 ---
 
