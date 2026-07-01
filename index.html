@@ -11,11 +11,16 @@
     <script src="./vendor/preact.js"></script>
     <script src="./vendor/hooks.js"></script>
     <script src="./vendor/htm.js"></script>
+    <script src="./vendor/marked.js"></script>
 
     <script>
         window.html = htm.bind(preact.h);
         window.useState = preactHooks.useState;
         window.useEffect = preactHooks.useEffect;
+
+        window.renderMarkdown = function(text) {
+            return marked.parse(text);
+        };
 
         window.loadCSS = function(href) {
             if (document.querySelector(`link[href="${href}"]`)) return;
@@ -27,7 +32,7 @@
             document.head.appendChild(link);
         };
     </script>
-
+    
     <script src="./src/routes.js"></script>
     <script src="./src/templates/shell.js"></script>
     <script src="./src/templates/not-found.js"></script>
@@ -40,6 +45,30 @@
 
         const routeCache = {};
 
+        function matchRoute(pages, route) {
+            if (pages[route]) return { config: pages[route], params: {} };
+
+            for (const key in pages) {
+                if (!key.includes(':')) continue;
+                const paramNames = [];
+                const pattern = '^' + key.split('/').map(seg => {
+                    if (seg.startsWith(':')) {
+                        paramNames.push(seg.slice(1));
+                        return '([^/]+)';
+                    }
+                    return seg;
+                }).join('/') + '$';
+
+                const match = route.match(new RegExp(pattern));
+                if (match) {
+                    const params = {};
+                    paramNames.forEach((name, i) => params[name] = match[i + 1]);
+                    return { config: pages[key], params };
+                }
+            }
+            return null;
+        }
+
         function Main() {
             const config = window.RouterConfig;
             const [currentRoute, setCurrentRoute] = useState(() => {
@@ -47,14 +76,16 @@
             });
             const [ActiveApp, setActiveApp] = useState(null);
             const [error, setError] = useState(null);
+            const [params, setParams] = useState({});
+
+            const matched = matchRoute(config.pages, currentRoute);
 
             useEffect(() => {
                 const handleHash = () => {
                     const nextRoute = window.location.hash.replace('#', '') || config.defaultRoute;
                     if (nextRoute === currentRoute) return;
 
-                    const routeConfig = config.pages[currentRoute];
-                    if (routeConfig?.canLeave && !routeConfig.canLeave()) {
+                    if (matched?.config.canLeave && !matched.config.canLeave()) {
                         window.location.hash = `#${currentRoute}`;
                         return;
                     }
@@ -68,8 +99,8 @@
             }, [currentRoute]);
 
             useEffect(() => {
-                const routeConfig = config.pages[currentRoute];
-                if (!routeConfig) return;
+                if (!matched) return;
+                const { config: routeConfig, params: routeParams } = matched;
 
                 if (routeConfig.canEnter && !routeConfig.canEnter()) {
                     if (currentRoute !== config.defaultRoute) window.goTo(config.defaultRoute);
@@ -78,6 +109,7 @@
 
                 if (routeConfig.title) document.title = routeConfig.title;
                 setError(null);
+                setParams(routeParams);
 
                 if (routeCache[currentRoute]) {
                     document.querySelectorAll('.dynamic-page-style').forEach(s => s.remove());
@@ -98,7 +130,7 @@
                 });
             }, [currentRoute]);
 
-            if (!config.pages[currentRoute]) {
+            if (!matched) {
                 return html`<${NotFound} route=${currentRoute} />`;
             }
 
@@ -112,7 +144,7 @@
 
             return html`
                 <${Shell} currentRoute=${currentRoute}>
-                    <${ActiveApp} />
+                    <${ActiveApp} params=${params} />
                 </${Shell}>
             `;
         }
